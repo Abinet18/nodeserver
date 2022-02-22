@@ -1,10 +1,12 @@
-import { Schema, model, connect, Mongoose } from 'mongoose'
-import { string } from 'yup';
-import { addBlogsToCache, addBlogToCache, deleteBlogFromCache, getBlogsFromCache } from '../cache/cache';
-import { addBlogInCassandra, deleteFromCassandra, getBlogsFromCassandra } from '../cassandra/db';
-import { deleteBlogFromFileDB, getAllBlogsFromFileDb, saveBlogInFileDb } from '../filedb/fileDb';
-import { addBlogToSqliteDB, deleteBlogFromSqliteDB, getAllBlogsFromSqliteDB } from '../sqlite/sqlite';
-import { Blog } from './data';
+import { Schema, model, connect, Mongoose } from 'mongoose';
+
+export type Blog = {
+    id: string,
+    userId: string,
+    blogDate: Date,
+    blogTitle: string,
+    blogText: string
+}
 
 const BlogSchema = new Schema<Blog>({
     id: {
@@ -32,13 +34,9 @@ const BlogSchema = new Schema<Blog>({
 const BlogModel = model('Blog', BlogSchema);
 
 export const addBlog = async (d: Blog) => {
-    // const blog = new BlogModel(d);
-    // const blogAdded = await blog.save();
-    // const blogAdded = await addBlogInCassandra(d);
-    // await saveBlogInFileDb(d);
-    await addBlogToSqliteDB(d);
-    await addBlogToCache(d);
-    return d;
+    const blog = new BlogModel(d);
+    const blogAdded = await blog.save();
+    return blogAdded;
 }
 
 export const updateBlog = async (d: Blog) => {
@@ -47,11 +45,7 @@ export const updateBlog = async (d: Blog) => {
 }
 
 export const deleteBlog = async (d: Blog) => {
-    // const deletedBlog = await BlogModel.deleteOne({ id: d.id });
-    // const deletedBlog = await deleteFromCassandra(d);
-    // await deleteBlogFromFileDB(d.id);
-    await deleteBlogFromSqliteDB(d.id);
-    await deleteBlogFromCache(d);
+    const deletedBlog = await BlogModel.deleteOne({ id: d.id });
     return d;
 }
 
@@ -60,18 +54,7 @@ export const queryBlogs = async (q: string) => {
 }
 
 export const getBlogs = async () => {
-    // const blogs = await BlogModel.find({});
-    let blogs: Blog[] = await getBlogsFromCache();
-    if (blogs && blogs.length > 0) {
-        console.log('return blogs from cache');
-        return blogs;
-    }
-    // blogs = await getBlogsFromCassandra() || [];
-    // blogs = await getAllBlogsFromFileDb();
-    await getAllBlogsFromSqliteDB();
-    if (blogs.length > 0) {
-        addBlogsToCache(blogs);
-    }
+    const blogs = await BlogModel.find({});
     return blogs;
 }
 

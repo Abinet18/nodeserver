@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { addBlog, deleteBlog, getBlog, getBlogs, queryBlogs, updateBlog } from '../models/blogs';
-import { writeToKafka } from '../server';
+
 const routes = Router();
 
 routes.get('/', async (req, res) => {
@@ -20,8 +20,6 @@ routes.post('/add', async (req, res) => {
     console.log('Adding', req.body);
     const blog = req.body;
     const blogAdded = await addBlog(blog);
-    // sendToAllClients(JSON.stringify({ type: 'add', payload: blogAdded }));
-    writeToKafka(JSON.stringify({ type: 'add', payload: blogAdded }));
     res.json(blogAdded);
 })
 
@@ -36,8 +34,6 @@ routes.delete('/delete', async (req, res) => {
     console.log('Deleting', req.body);
     const blog = req.body;
     const deletedBlog = await deleteBlog(blog);
-    // sendToAllClients(JSON.stringify({ type: 'delete', payload: blog }));
-    writeToKafka(JSON.stringify({ type: 'delete', payload: blog }));
     res.json(blog);
 })
 
