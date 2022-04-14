@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=, initial-scale=1.0">
     <title>Document</title>
-
+    <script src="script.js"></script>
 </head>
 
 
@@ -14,11 +14,6 @@
     Test sending a Beacon
     <button id="send">Send Beacon</button>
 </body>
-<script>
-    let buttonEl = document.getElementById('send');
-    buttonEl.addEventListener('click', () => {
-        navigator.sendBeacon('http://localhost:5001/beacon', JSON.stringify({ id: 'test_1', metrics: 'test metrics' }));
-    })
-</script>
+
 
 </html>
