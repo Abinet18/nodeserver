@@ -6,16 +6,24 @@ const { XMLHttpRequestInstrumentation } = require('@opentelemetry/instrumentatio
 const { UserInteractionInstrumentation } = require('@opentelemetry/instrumentation-user-interaction');
 const { ZoneContextManager } = require('@opentelemetry/context-zone');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
-const { SpanKind } = require('@opentelemetry/api');
+const { Resource } = require('@opentelemetry/resources');
+const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions')
 
-const provider = new WebTracerProvider();
-provider.addSpanProcessor(new SimpleSpanProcessor(new ZipkinExporter()));
+const provider = new WebTracerProvider({
+    resource: new Resource({
+        [SemanticResourceAttributes.SERVICE_NAME]: "Browser-Service"
+    })
+});
+provider.addSpanProcessor(new SimpleSpanProcessor(new ZipkinExporter({ headers: {} })));
+provider.addSpanProcessor(
+    new SimpleSpanProcessor(new ConsoleSpanExporter())
+);
 provider.register({
     // Changing default contextManager to use ZoneContextManager - supports asynchronous operations - optional
     contextManager: new ZoneContextManager(),
 });
 
-const tracer = provider.getTracer('test_web_app');
+const tracer = provider.getTracer("browser", "1.0.0");
 
 // Registering instrumentations
 registerInstrumentations({
@@ -47,6 +55,7 @@ const fetchData = () => {
     xhr.onload = () => {
         if (xhr.status == 200) {
             const span = tracer.startSpan('fetching data successful');
+            span.setAttribute('service.name', 'Browser Service');
             const products = JSON.parse(xhr.responseText);
             showProducts(products);
             span.end();
